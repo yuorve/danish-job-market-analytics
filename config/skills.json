@@ -1,0 +1,71 @@
+{
+  "categories": {
+    "Programming": [
+      {"name": "Python", "aliases": ["python", "py"], "pattern": "\\bpython\\b|\\bpy3?\\b"},
+      {"name": "Java", "aliases": ["java"], "pattern": "\\bjava\\b(?!script)"},
+      {"name": "JavaScript", "aliases": ["javascript", "js"], "pattern": "\\bjavascript\\b|\\bjs\\b"},
+      {"name": "TypeScript", "aliases": ["typescript", "ts"], "pattern": "\\btypescript\\b|\\bts\\b"},
+      {"name": "C#", "aliases": ["c#", "csharp", ".net c#"], "pattern": "(?:\\bc#|\\bcsharp\\b)(?=[,\\s\\.\\)/;]|\\b|$)"},
+      {"name": "C++", "aliases": ["c++", "cpp"], "pattern": "(?:\\bc\\+\\+|\\bcpp\\b)(?=[,\\s\\.\\)/;]|\\b|$)"},
+      {"name": "C", "aliases": ["c lang"], "pattern": "\\bc\\s+language\\b|\\bansi c\\b"},
+      {"name": "Go", "aliases": ["golang", "go"], "pattern": "(?:\\bgolang\\b|\\bgo\\b(?=[,\\s\\.\\)/;]|\\b|$))"},
+      {"name": "Rust", "aliases": ["rust"], "pattern": "\\brust\\b"},
+      {"name": "PHP", "aliases": ["php"], "pattern": "\\bphp\\b"},
+      {"name": "Kotlin", "aliases": ["kotlin"], "pattern": "\\bkotlin\\b"},
+      {"name": "Swift", "aliases": ["swift"], "pattern": "\\bswift\\b"},
+      {"name": "Dart", "aliases": ["dart"], "pattern": "\\bdart\\b"},
+      {"name": "R", "aliases": ["r stats"], "pattern": "\\br\\s+programming\\b|\\br\\s+language\\b|\\br-lang\\b"},
+      {"name": "Scala", "aliases": ["scala"], "pattern": "\\bscala\\b"},
+      {"name": "Bash", "aliases": ["bash", "shell scripting"], "pattern": "\\bbash\\b|\\bshell\\s+scripting\\b"}
+    ],
+    "Data": [
+      {"name": "SQL", "aliases": ["sql", "t-sql", "pl/sql"], "pattern": "\\bsql\\b|\\bt-sql\\b|\\bpl/sql\\b"},
+      {"name": "Pandas", "aliases": ["pandas"], "pattern": "\\bpandas\\b"},
+      {"name": "Apache Spark", "aliases": ["spark", "pyspark", "apache spark"], "pattern": "\\bspark\\b|\\bpyspark\\b|\\bapache\\s+spark\\b"},
+      {"name": "Databricks", "aliases": ["databricks"], "pattern": "\\bdatabricks\\b"},
+      {"name": "Microsoft Fabric", "aliases": ["fabric", "microsoft fabric", "ms fabric"], "pattern": "\\bmicrosoft\\s+fabric\\b|\\bms\\s+fabric\\b|\\bfabric\\b"},
+      {"name": "Power BI", "aliases": ["power bi", "powerbi", "pbi"], "pattern": "\\bpower\\s*bi\\b|\\bpbi\\b"},
+      {"name": "Snowflake", "aliases": ["snowflake"], "pattern": "\\bsnowflake\\b"},
+      {"name": "Apache Airflow", "aliases": ["airflow", "apache airflow"], "pattern": "\\bairflow\\b"},
+      {"name": "dbt", "aliases": ["dbt", "data build tool"], "pattern": "\\bdbt\\b|\\bdata\\s+build\\s+tool\\b"},
+      {"name": "Delta Lake", "aliases": ["delta lake"], "pattern": "\\bdelta\\s+lake\\b"},
+      {"name": "Kafka", "aliases": ["kafka", "apache kafka"], "pattern": "\\bkafka\\b"},
+      {"name": "PostgreSQL", "aliases": ["postgres", "postgresql"], "pattern": "\\bpostgres\\b|\\bpostgresql\\b"},
+      {"name": "Tableau", "aliases": ["tableau"], "pattern": "\\btableau\\b"}
+    ],
+    "Cloud": [
+      {"name": "Azure", "aliases": ["azure", "microsoft azure"], "pattern": "\\bazure\\b"},
+      {"name": "AWS", "aliases": ["aws", "amazon web services"], "pattern": "\\baws\\b|\\bamazon\\s+web\\s+services\\b"},
+      {"name": "GCP", "aliases": ["gcp", "google cloud"], "pattern": "\\bgcp\\b|\\bgoogle\\s+cloud\\b"},
+      {"name": "Docker", "aliases": ["docker"], "pattern": "\\bdocker\\b"},
+      {"name": "Kubernetes", "aliases": ["kubernetes", "k8s"], "pattern": "\\bkubernetes\\b|\\bk8s\\b"},
+      {"name": "Terraform", "aliases": ["terraform"], "pattern": "\\bterraform\\b"},
+      {"name": "Linux", "aliases": ["linux"], "pattern": "\\blinux\\b"},
+      {"name": "CI/CD", "aliases": ["ci/cd", "continuous integration", "github actions"], "pattern": "\\bci/cd\\b|\\bgithub\\s+actions\\b|\\bdevops\\s+pipelines\\b"}
+    ],
+    "AI": [
+      {"name": "Machine Learning", "aliases": ["ml", "machine learning"], "pattern": "\\bmachine\\s+learning\\b|\\bml\\b"},
+      {"name": "Deep Learning", "aliases": ["deep learning"], "pattern": "\\bdeep\\s+learning\\b"},
+      {"name": "LLM", "aliases": ["llm", "large language models"], "pattern": "\\bllm[s]?\\b|\\blarge\\s+language\\s+model[s]?\\b"},
+      {"name": "Generative AI", "aliases": ["genai", "generative ai"], "pattern": "\\bgenerative\\s+ai\\b|\\bgenai\\b"},
+      {"name": "OpenAI", "aliases": ["openai", "gpt-4"], "pattern": "\\bopenai\\b|\\bgpt-?4\\b|\\bchatgpt\\b"},
+      {"name": "Azure OpenAI", "aliases": ["azure openai"], "pattern": "\\bazure\\s+openai\\b"},
+      {"name": "LangChain", "aliases": ["langchain"], "pattern": "\\blangchain\\b"},
+      {"name": "RAG", "aliases": ["rag", "retrieval augmented generation"], "pattern": "\\brag\\b|\\bretrieval\\s+augmented\\s+generation\\b"},
+      {"name": "Computer Vision", "aliases": ["computer vision", "cv"], "pattern": "\\bcomputer\\s+vision\\b"},
+      {"name": "NLP", "aliases": ["nlp", "natural language processing"], "pattern": "\\bnlp\\b|\\bnatural\\s+language\\s+processing\\b"},
+      {"name": "PyTorch", "aliases": ["pytorch"], "pattern": "\\bpytorch\\b"},
+      {"name": "TensorFlow", "aliases": ["tensorflow"], "pattern": "\\btensorflow\\b"}
+    ],
+    "Development": [
+      {"name": "React", "aliases": ["react", "react.js"], "pattern": "\\breact(?:\\.js)?\\b"},
+      {"name": "Node.js", "aliases": ["node", "nodejs", "node.js"], "pattern": "\\bnode(?:\\.js)?\\b"},
+      {"name": ".NET", "aliases": [".net", "dotnet", ".net core", "asp.net"], "pattern": "(?<!\\w)(?:\\.net\\b|\\bdotnet\\b|\\basp\\.net\\b)"},
+      {"name": "Spring", "aliases": ["spring boot", "spring"], "pattern": "\\bspring\\s*boot\\b|\\bspring\\s+framework\\b"},
+      {"name": "FastAPI", "aliases": ["fastapi"], "pattern": "\\bfastapi\\b"},
+      {"name": "Django", "aliases": ["django"], "pattern": "\\bdjango\\b"},
+      {"name": "Flutter", "aliases": ["flutter"], "pattern": "\\bflutter\\b"},
+      {"name": "REST API", "aliases": ["rest api", "restful api"], "pattern": "\\brest\\s*api[s]?\\b|\\brestful\\b"}
+    ]
+  }
+}

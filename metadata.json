@@ -1,0 +1,7 @@
+{
+  "name": "Danish Job Market Analytics",
+  "description": "End-to-end IT Job Market Data Pipeline, Analytics Engine, and Candidate Matcher for Denmark.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
+

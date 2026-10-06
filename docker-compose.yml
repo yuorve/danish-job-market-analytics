@@ -1,0 +1,18 @@
+version: "3.8"
+
+services:
+  danish-job-market-analytics:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: danish_job_market_analytics
+    ports:
+      - "8501:8501"
+    environment:
+      - AI_MODE=mock
+      - DB_PATH=/app/data/processed/danish_jobs.db
+      - GEMINI_API_KEY=${GEMINI_API_KEY:-}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+    volumes:
+      - ./data:/app/data
+    restart: unless-stopped
