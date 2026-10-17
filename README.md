@@ -2,64 +2,64 @@
 
 [![Python](https://img.shields.io/badge/Python-3.10%2B-blue.svg)](https://www.python.org/)
 [![Database](https://img.shields.io/badge/Database-SQLite%20(3NF)-green.svg)](https://sqlite.org/)
-[![Tests](https://img.shields.io/badge/Tests-18%20Passing-success.svg)](#6-cómo-ejecutarlo)
+[![Tests](https://img.shields.io/badge/Tests-18%20Passing-success.svg)](#6-how-to-run-it)
 [![Docker](https://img.shields.io/badge/Docker-Ready-2496ED.svg)](https://www.docker.com/)
 
 ---
 
-## 1. Qué es
+## 1. What It Is
 
-Un pipeline reproducible de **Data Engineering + Analytics** que recopila, limpia, transforma y analiza el mercado laboral tecnológico en Dinamarca (Copenhague, Aarhus, Odense, Aalborg, etc.).
+A reproducible **Data Engineering + Analytics** pipeline that ingests, cleans, transforms, and analyzes the technology job market in Denmark (Copenhagen, Aarhus, Odense, Aalborg, etc.).
 
-Incluye:
-* Pipeline ETL modular con validaciones de calidad (DQ) y deduplicación por hash MD5.
-* Base de datos relacional normalizada (3FN) con consultas analíticas en SQL.
-* Motor de extracción de habilidades técnicas y clasificación de ofertas.
-* Algoritmo de **Candidate Match** con detección de requisitos de idioma (inglés vs. danés).
-* Dashboard analítico interactivo (Streamlit + Web App).
-
----
-
-## 2. Qué demuestra
-
-Diseñado para demostrar competencias prácticas para roles de **Data Specialist / Data Instructor / Junior Data Engineer**:
-
-* **Python & Data Engineering:** Pipeline modular (Extract, Clean, Transform, Load) tipado y reproducible.
-* **Calidad de datos:** Deduplicación determinista, stripping HTML, normalización de entidades y reporte de calidad.
-* **Modelado relacional y SQL:** Esquema 3NF con tabla intermedia de unión (N:M) y consultas analíticas avanzadas.
-* **Extracción de entidades:** Taxonomía RegEx robusta ante casos borde (`C#`, `.NET`, `Go`).
-* **AI pragmática:** Capa LLM con validación estricta de JSON y fallback offline (`AI_MODE=mock`).
-* **Buenas prácticas:** Tests unitarios automatizados (18 tests), contenedor Docker y código desacoplado.
+Key components:
+* Modular ETL pipeline with data quality (DQ) checks and MD5 hash deduplication.
+* Normalized relational database (3NF) with analytical SQL queries.
+* Technology taxonomy and skill extraction engine.
+* **Candidate Matcher** evaluating technical fit and Danish vs. English language requirements.
+* Interactive analytics dashboard (Streamlit + Web App).
 
 ---
 
-## 3. Arquitectura
+## 2. What It Demonstrates
+
+Built to showcase production-ready skills for **Data Specialist / Data Instructor / Junior Data Engineer** roles:
+
+* **Python & Data Engineering:** Modular, typed, and reproducible pipeline (Extract, Clean, Transform, Load).
+* **Data Quality & Hygiene:** Deterministic deduplication, HTML stripping, entity normalization, and validation reports.
+* **Relational Modeling & SQL:** 3NF schema with junction tables (N:M) and analytical aggregations.
+* **Entity Extraction:** RegEx taxonomy handling tricky edge cases (`C#`, `.NET`, `Go`).
+* **Pragmatic AI:** Structured LLM extraction with strict JSON validation and offline fallback (`AI_MODE=mock`).
+* **Software Engineering Practices:** 18 automated unit tests, Docker containerization, and decoupled components.
+
+---
+
+## 3. Architecture
 
 ```text
-[ Fuentes de Datos ] ──► (JobSource Interface: Demo, CSV, APIs)
-         │
-         ▼
-[ Ingestion & Clean ] ──► Deduplicación MD5 + Stripping HTML + Normalización de entidades
-         │
-         ▼
-[ Transform & Extract ] ──► Motor RegEx (config/skills.yaml) + Clasificación (Idioma / Seniority)
-         │
-         ▼
-[ SQLite Database ] ──► Esquema relacional 3NF (jobs, companies, locations, skills, job_skills)
-         │
-         ▼
-[ Serving & Analytics ] ──► SQL Console + Candidate Matcher + Streamlit / Web Dashboard
+[ Data Sources ] ──► (JobSource Interface: Demo, CSV, APIs)
+        │
+        ▼
+[ Ingestion & Clean ] ──► MD5 Deduplication + HTML Stripping + Entity Normalization
+        │
+        ▼
+[ Transform & Extract ] ──► RegEx Engine (config/skills.yaml) + Domain & Language Flags
+        │
+        ▼
+[ SQLite Database ] ──► 3NF Relational Model (jobs, companies, locations, skills, job_skills)
+        │
+        ▼
+[ Serving & Analytics ] ──► SQL Studio + Candidate Matcher + Streamlit / Web Dashboard
 ```
 
 ---
 
 ## 4. Tech Stack
 
-* **Lenguaje:** Python 3.10+
-* **Datos & ETL:** Pandas, SQLite3 (compatible con PostgreSQL / Azure SQL)
-* **RegEx & Taxonomía:** YAML / JSON (`config/skills.yaml`)
-* **AI Layer:** Google Gemini / OpenAI API con fallback determinista offline
-* **Visualización:** Streamlit + React / Express
+* **Language:** Python 3.10+
+* **Data & ETL:** Pandas, SQLite3 (portable to PostgreSQL / Azure SQL)
+* **RegEx & Taxonomy:** YAML / JSON (`config/skills.yaml`)
+* **AI Layer:** Google Gemini / OpenAI API with offline deterministic fallback
+* **Dashboard:** Streamlit + React / Express
 * **Testing:** Pytest / Unittest (18 tests, 100% passing)
 * **DevOps:** Docker, Docker Compose, Makefile
 
@@ -67,46 +67,46 @@ Diseñado para demostrar competencias prácticas para roles de **Data Specialist
 
 ## 5. Demo Data
 
-Para garantizar ejecución 100% local e inmediata sin dependencias externas:
+Ensures 100% local, instant reproducibility without external API credentials:
 
-* **Dataset demo:** 520+ ofertas realistas del mercado IT danés (Novo Nordisk, Maersk, Netcompany, SimCorp, etc.).
-* **Ciudades cubiertas:** Copenhagen, Aarhus, Odense, Aalborg, Ballerup, Lyngby, Hillerød, Roskilde.
-* **Transparencia ética:** Todos los registros sintéticos están identificados explícitamente con `source = "synthetic_demo"`.
+* **Demo Dataset:** 520+ realistic job postings modeled after Danish tech employers (Novo Nordisk, Maersk, Netcompany, SimCorp, etc.).
+* **Geographic Coverage:** Copenhagen, Aarhus, Odense, Aalborg, Ballerup, Lyngby, Hillerød, Roskilde.
+* **Ethical Transparency:** All synthetic demo records are explicitly marked with `source = "synthetic_demo"`.
 
 ---
 
-## 6. Cómo ejecutarlo
+## 6. How to Run It
 
-### Con Docker (Recomendado)
+### With Docker (Recommended)
 ```bash
 docker compose up --build
 ```
-Abre el dashboard en: `http://localhost:8501`
+Open dashboard at: `http://localhost:8501`
 
-### Local con Make
+### Local with Make
 ```bash
-make pipeline    # Ejecuta Extract -> Clean -> Transform -> Load
-make test        # Ejecuta los 18 tests automatizados
-make dashboard   # Lanza el dashboard Streamlit
+make pipeline    # Run Extract -> Clean -> Transform -> Load
+make test        # Run the 18 automated unit tests
+make dashboard   # Launch Streamlit dashboard
 ```
 
 ---
 
-## 7. Limitaciones
+## 7. Limitations
 
-* **Datos reales vs. scraping:** Para respetar términos de servicio y `robots.txt` de portales daneses (Jobindex, Jobnet), la ingesta utiliza conectores adapter y dataset sintético representativo.
-* **Alcance de la IA:** El LLM enriquece matices cualitativos (cultura, requisitos implícitos); el procesamiento crítico de datos es determinista y no depende de llamadas externas.
-* **Entorno:** Diseñado para ejecución ágil y local en SQLite antes de su despliegue en infraestructuras cloud.
+* **Real Web Data vs. Scraping:** To comply with Terms of Service and `robots.txt` of Danish job portals (Jobindex, Jobnet), live ingestion is modeled via adapter skeletons and a realistic synthetic dataset.
+* **AI Boundaries:** LLMs are used selectively for qualitative analysis (culture, implicit soft skills); core data processing is 100% deterministic.
+* **Storage:** Uses SQLite for local simplicity and instant portfolio evaluation before cloud deployment.
 
 ---
 
 ## 8. Roadmap
 
-Diseñado con un camino directo de evolución hacia arquitecturas **Lakehouse (Medallion)** en plataformas empresariales danesas (Microsoft Azure / Databricks / Microsoft Fabric):
+Designed with a clear migration path to an enterprise **Medallion Lakehouse** on modern platforms common in Danish IT consultancies (Microsoft Azure / Databricks / Microsoft Fabric):
 
-1. **Bronze:** Landing de JSONs crudos en Azure Data Lake Storage Gen2 / OneLake.
-2. **Silver:** Limpieza, deduplicación y tipado mediante PySpark / Databricks Notebooks en Delta Lake.
-3. **Gold:** Modelo dimensional Star Schema (`Fact_Job_Postings`, `Dim_Skill`, `Dim_Company`).
-4. **BI:** Conexión directa a Power BI mediante Direct Lake mode.
+1. **Bronze:** Land raw JSON payloads into Azure Data Lake Storage Gen2 / OneLake.
+2. **Silver:** Clean, deduplicate, and enforce schemas with PySpark / Databricks in Delta Lake.
+3. **Gold:** Star Schema analytical mart (`Fact_Job_Postings`, `Dim_Skill`, `Dim_Company`).
+4. **BI:** Direct Lake connectivity in Power BI for sub-second executive analytics.
 
-*Detalles ampliados disponibles en [`docs/fabric_migration.md`](docs/fabric_migration.md) y [`docs/interview_guide.md`](docs/interview_guide.md).*
+*Deep-dive guides available in [`docs/fabric_migration.md`](docs/fabric_migration.md) and [`docs/interview_guide.md`](docs/interview_guide.md).*
