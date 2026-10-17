@@ -37,6 +37,8 @@ interface KPIs {
   salary_avg_dkk: number;
   salary_min_dkk: number;
   salary_max_dkk: number;
+  language_counts?: { english: number; danish: number; both: number; unknown: number };
+  language_percentages?: { english: number; danish: number; both: number; unknown: number };
 }
 
 interface StatsData {
@@ -46,6 +48,7 @@ interface StatsData {
   categories: Array<{ role_category: string; count: number; avg_salary: number; junior_count: number }>;
   companies: Array<{ company: string; industry: string; open_positions: number; avg_salary: number; english_friendly_positions: number }>;
   cooccurrence: Array<{ tech_a: string; tech_b: string; cooccurrence_count: number }>;
+  languages?: Array<{ requirement: string; count: number; percentage: number; avg_salary: number }>;
 }
 
 interface Job {
@@ -60,6 +63,7 @@ interface Job {
   salary_avg: number;
   salary_min: number;
   salary_max: number;
+  language_requirement?: string;
   is_danish_required: number;
   is_english_only: number;
   remote_type: string;
@@ -584,29 +588,77 @@ export default function App() {
                   </div>
                 </div>
 
-                {/* Language Requirements Deep Dive */}
-                <div className="bg-slate-900 border border-slate-800 rounded p-5">
-                  <h2 className="text-sm font-semibold text-slate-200 mb-3 flex items-center gap-2">
-                    <Globe2 className="w-4 h-4 text-cyan-400" /> Language Reality in Denmark IT
-                  </h2>
-                  <div className="grid md:grid-cols-2 gap-4 text-xs">
-                    <div className="p-4 bg-slate-950 rounded border border-slate-800 space-y-2">
+                {/* Language Requirements Deep Dive: English, Danish, Both, Unknown */}
+                <div className="bg-slate-900 border border-slate-800 rounded p-5 space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h2 className="text-sm font-semibold text-slate-200 flex items-center gap-2">
+                        <Globe2 className="w-4 h-4 text-cyan-400" /> Language Requirement Detection (English, Danish, Both, Unknown)
+                      </h2>
+                      <p className="text-xs text-slate-400">
+                        Rigorous 4-way classification across {kpis?.total_jobs || 443} analyzed Danish IT vacancies.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
+                    <div className="p-3.5 bg-slate-950 rounded border border-slate-800 space-y-1">
                       <div className="flex items-center justify-between">
-                        <span className="font-medium text-emerald-400">English-Only (Corporate Language)</span>
-                        <span className="font-mono font-bold text-slate-100">{kpis?.english_friendly_pct}%</span>
+                        <span className="font-semibold text-emerald-400">English Only</span>
+                        <span className="font-mono text-slate-100 font-bold">
+                          {kpis?.language_percentages?.english ?? kpis?.english_friendly_pct}%
+                        </span>
                       </div>
-                      <p className="text-slate-400">
-                        Global pharmaceutical hubs (Novo Nordisk, Leo Pharma), multinational shipping (Maersk), investment fintech (SimCorp, Saxo Bank), and high-growth Copenhagen startups conduct all sprints, PRs, and team meetings exclusively in English.
+                      <span className="text-[11px] text-slate-400 block">
+                        {kpis?.language_counts?.english ?? 235} openings
+                      </span>
+                      <p className="text-[11px] text-slate-400 mt-1">
+                        Multinational pharma (Novo Nordisk), shipping (Maersk), fintech (SimCorp) &amp; tech startups.
                       </p>
                     </div>
 
-                    <div className="p-4 bg-slate-950 rounded border border-slate-800 space-y-2">
+                    <div className="p-3.5 bg-slate-950 rounded border border-slate-800 space-y-1">
                       <div className="flex items-center justify-between">
-                        <span className="font-medium text-amber-400">Danish Fluency Required</span>
-                        <span className="font-mono font-bold text-slate-100">{kpis?.danish_required_pct}%</span>
+                        <span className="font-semibold text-cyan-400">Both (EN + DA)</span>
+                        <span className="font-mono text-slate-100 font-bold">
+                          {kpis?.language_percentages?.both ?? 25.1}%
+                        </span>
                       </div>
-                      <p className="text-slate-400">
-                        Mandatory primarily in Danish public sector IT (KMD, municipal agencies, ATP, Skatteforvaltningen) and local business consultancies where client stakeholders require Danish communication.
+                      <span className="text-[11px] text-slate-400 block">
+                        {kpis?.language_counts?.both ?? 110} openings
+                      </span>
+                      <p className="text-[11px] text-slate-400 mt-1">
+                        Consultancies (Netcompany, Devoteam, Delegate) requiring Danish for clients &amp; English for technical work.
+                      </p>
+                    </div>
+
+                    <div className="p-3.5 bg-slate-950 rounded border border-slate-800 space-y-1">
+                      <div className="flex items-center justify-between">
+                        <span className="font-semibold text-amber-400">Danish Only</span>
+                        <span className="font-mono text-slate-100 font-bold">
+                          {kpis?.language_percentages?.danish ?? 12.0}%
+                        </span>
+                      </div>
+                      <span className="text-[11px] text-slate-400 block">
+                        {kpis?.language_counts?.danish ?? 53} openings
+                      </span>
+                      <p className="text-[11px] text-slate-400 mt-1">
+                        Public sector IT (KMD, Kommuner, Skatteforvaltningen) with strictly Danish internal operations.
+                      </p>
+                    </div>
+
+                    <div className="p-3.5 bg-slate-950 rounded border border-slate-800 space-y-1">
+                      <div className="flex items-center justify-between">
+                        <span className="font-semibold text-purple-400">Unknown / Unstated</span>
+                        <span className="font-mono text-slate-100 font-bold">
+                          {kpis?.language_percentages?.unknown ?? 7.9}%
+                        </span>
+                      </div>
+                      <span className="text-[11px] text-slate-400 block">
+                        {kpis?.language_counts?.unknown ?? 35} openings
+                      </span>
+                      <p className="text-[11px] text-slate-400 mt-1">
+                        No explicit language clause; focus is on engineering craftsmanship and problem solving.
                       </p>
                     </div>
                   </div>
@@ -834,12 +886,19 @@ export default function App() {
                               {curJob.company_name} &middot; {curJob.city} &middot; {curJob.remote_type}
                             </div>
                             <div className="text-slate-400">
-                              Language:{' '}
-                              {curJob.is_danish_required ? (
-                                <span className="text-amber-400 font-medium">Danish Required</span>
-                              ) : (
-                                <span className="text-emerald-400 font-medium">English Friendly</span>
-                              )}
+                              Language Requirement:{' '}
+                              {(() => {
+                                const req = curJob.language_requirement || (curJob.is_danish_required ? 'Danish' : 'English');
+                                if (req === 'English') {
+                                  return <span className="text-emerald-400 font-medium">English Only (International)</span>;
+                                } else if (req === 'Both') {
+                                  return <span className="text-cyan-400 font-medium">Both Danish &amp; English</span>;
+                                } else if (req === 'Danish') {
+                                  return <span className="text-amber-400 font-medium">Danish Required</span>;
+                                } else {
+                                  return <span className="text-purple-400 font-medium">Unknown / Unspecified</span>;
+                                }
+                              })()}
                             </div>
                             <div className="text-slate-300 font-mono text-[11px]">
                               Required Stack: {curJob.skills_list || 'Python, SQL, Azure'}

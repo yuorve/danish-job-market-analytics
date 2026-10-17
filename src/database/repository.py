@@ -83,11 +83,12 @@ class JobRepository:
                     job_id, source_id, company_id, location_id, title, normalized_title,
                     role_category, description, remote_type, employment_type, published_date,
                     salary_min, salary_max, salary_avg, currency, url, language_requirements,
+                    language_requirement,
                     is_danish_required, is_english_only, is_remote, is_hybrid, is_junior,
                     is_data_role, is_ai_role, is_devops_role, is_cloud_role,
                     experience_level, education_requirements
                 ) VALUES (
-                    ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
+                    ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
                 )
                 ON CONFLICT(job_id) DO UPDATE SET
                     title = excluded.title,
@@ -98,6 +99,7 @@ class JobRepository:
                     salary_min = excluded.salary_min,
                     salary_max = excluded.salary_max,
                     salary_avg = excluded.salary_avg,
+                    language_requirement = excluded.language_requirement,
                     is_danish_required = excluded.is_danish_required,
                     is_english_only = excluded.is_english_only,
                     is_junior = excluded.is_junior,
@@ -121,6 +123,7 @@ class JobRepository:
                     job_data.get("currency", "DKK"),
                     job_data.get("url", ""),
                     job_data.get("language_requirements", ""),
+                    job_data.get("language_requirement", "Unknown"),
                     int(bool(job_data.get("is_danish_required", False))),
                     int(bool(job_data.get("is_english_only", False))),
                     int(bool(job_data.get("is_remote", False))),

@@ -60,9 +60,27 @@ class AIJobAnalyzer:
         else:
             role_category = "Software Development"
 
-        # Language detection
-        danish_req = any(w in text for w in ["flydende dansk", "dansk på modersmålsniveau", "taler dansk", "danish required"])
-        english_acc = not danish_req or "english" in text
+        # Language detection: English, Danish, Both, or Unknown
+        danish_req = any(w in text for w in ["flydende dansk", "dansk på modersmålsniveau", "taler dansk", "danish required", "gode danskkundskaber"])
+        english_cues = any(w in text for w in ["english", "corporate language is english", "english only", "international"])
+        english_exclusive = any(w in text for w in ["corporate language is english", "english only", "danish is not required"])
+
+        if english_exclusive:
+            lang_req_cat = "English"
+            danish_req = False
+            english_acc = True
+        elif danish_req and english_cues:
+            lang_req_cat = "Both"
+            english_acc = True
+        elif danish_req:
+            lang_req_cat = "Danish"
+            english_acc = False
+        elif english_cues:
+            lang_req_cat = "English"
+            english_acc = True
+        else:
+            lang_req_cat = "Unknown"
+            english_acc = True
 
         # Skills detected
         detected_skills = []
@@ -86,7 +104,7 @@ class AIJobAnalyzer:
         summary = (
             f"Opportunity for a {seniority} {role_category} professional. "
             f"Focuses on modern tech stack ({', '.join(detected_skills[:3])}) "
-            f"in an {'international English-speaking' if not danish_req else 'Danish-fluent'} work environment."
+            f"with language requirement: {lang_req_cat}."
         )
 
         raw_dict = {
@@ -95,7 +113,8 @@ class AIJobAnalyzer:
             "skills": detected_skills,
             "language": {
                 "danish_required": danish_req,
-                "english_accepted": english_acc
+                "english_accepted": english_acc,
+                "requirement": lang_req_cat
             },
             "implicit_requirements": implicit,
             "summary": summary

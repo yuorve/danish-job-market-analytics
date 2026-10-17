@@ -79,23 +79,54 @@ class CandidateMatcher:
         cand_danish = candidate_profile.get("languages", {}).get("danish", "A1").upper()
         cand_english = candidate_profile.get("languages", {}).get("english", "B2").upper()
         
-        job_is_danish_req = bool(job.get("is_danish_required", False))
-        language_note = None
-        lang_score = 20.0
+        has_fluent_danish = cand_danish in ["B2", "C1", "C2", "NATIVE", "FLUENT"]
+        has_proficient_english = cand_english in ["B2", "C1", "C2", "NATIVE", "FLUENT"]
 
-        if job_is_danish_req:
-            # Check if candidate has B2, C1, or C2 in Danish
-            if cand_danish in ["B2", "C1", "C2", "NATIVE", "FLUENT"]:
+        job_lang = job.get("language_requirement")
+        if not job_lang:
+            if bool(job.get("is_danish_required", False)):
+                job_lang = "Both" if bool(job.get("is_english_only", False)) else "Danish"
+            elif bool(job.get("is_english_only", False)):
+                job_lang = "English"
+            else:
+                job_lang = "Unknown"
+
+        if job_lang == "Danish":
+            if has_fluent_danish:
                 lang_score = 20.0
                 language_match = True
+                language_note = "Position requires Danish fluency. Candidate profile satisfies requirement."
             else:
                 lang_score = 5.0
                 language_match = False
                 language_note = f"Position requires Danish fluency. Candidate profile indicates {cand_danish} (B2+ recommended)."
+        elif job_lang == "Both":
+            if has_fluent_danish and has_proficient_english:
+                lang_score = 20.0
+                language_match = True
+                language_note = "Position requires both Danish and English. Candidate profile satisfies both."
+            elif has_proficient_english:
+                lang_score = 10.0
+                language_match = False
+                language_note = f"Position requires both Danish and English. English is satisfied, but Danish is {cand_danish} (B2+ recommended)."
+            else:
+                lang_score = 5.0
+                language_match = False
+                language_note = "Position requires both fluent Danish and professional English proficiency."
+        elif job_lang == "English":
+            if has_proficient_english:
+                lang_score = 20.0
+                language_match = True
+                language_note = "Position is English-only / international corporate language. Danish not required."
+            else:
+                lang_score = 10.0
+                language_match = False
+                language_note = f"Position requires professional English proficiency. Candidate indicates {cand_english}."
         else:
-            # English friendly
+            # Unknown / Unstated
+            lang_score = 16.0
             language_match = True
-            language_note = "Position is international / English-friendly. No Danish required."
+            language_note = "Language requirement is unstated in the listing. English is typically standard in Danish IT."
 
         # Seniority alignment (weighted 10%)
         cand_exp = candidate_profile.get("experience", {}).get("level", "junior").lower()

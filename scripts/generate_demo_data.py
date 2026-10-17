@@ -131,14 +131,24 @@ def generate_dataset(num_records=525):
         else:
             remote_type = "On-site"
             
-        # Language requirement
-        is_danish = random.random() < comp["danish_pct"]
-        if is_danish:
-            lang_req = "Danish required (fluent spoken/written), English professional"
-            lang_desc = "Vi forventer gode danskkundskaber både skriftligt og mundtligt, da en del af kundekontakten foregår på dansk. English proficiency is also required."
-        else:
+        # Language requirement distribution: English, Both, Danish, Unknown
+        lang_roll = random.random()
+        if lang_roll < 0.55:
+            # English only
             lang_req = "English only / English corporate language"
             lang_desc = "Our corporate working language is English. Danish is not required for this international role."
+        elif lang_roll < 0.80:
+            # Both Danish and English
+            lang_req = "Both Danish and English required"
+            lang_desc = "Vi forventer gode danskkundskaber både skriftligt og mundtligt, da en del af kundekontakten foregår på dansk. Professional English proficiency is also required."
+        elif lang_roll < 0.92:
+            # Danish only
+            lang_req = "Danish required (fluent spoken/written)"
+            lang_desc = "Flydende dansk på modersmålsniveau er et ufravigeligt krav til denne stilling. Al intern og ekstern dokumentation foregår på dansk."
+        else:
+            # Unknown / unspecified
+            lang_req = "Unspecified / Not stated"
+            lang_desc = "We focus on engineering craftsmanship, problem-solving, and clean architectural design."
             
         # Published date
         days_offset = random.randint(0, 89)

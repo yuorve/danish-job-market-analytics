@@ -106,3 +106,16 @@ JOIN jobs j ON c.company_id = j.company_id
 GROUP BY c.company_id, c.name, c.industry
 ORDER BY total_openings DESC
 LIMIT 10;
+
+-- 8. 4-Way Language Requirement Breakdown (English, Danish, Both, Unknown)
+-- Categorizes vacancies into English, Danish, Both, or Unknown with salary benchmarks
+SELECT 
+    COALESCE(language_requirement, 'Unknown') AS language_category,
+    COUNT(*) AS total_postings,
+    ROUND(COUNT(*) * 100.0 / (SELECT COUNT(*) FROM jobs), 1) AS market_percentage,
+    ROUND(AVG(salary_avg), 0) AS avg_monthly_salary_dkk,
+    SUM(CASE WHEN is_junior = 1 THEN 1 ELSE 0 END) AS junior_friendly_openings
+FROM jobs
+GROUP BY COALESCE(language_requirement, 'Unknown')
+ORDER BY total_postings DESC;
+

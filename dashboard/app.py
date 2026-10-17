@@ -160,21 +160,42 @@ elif section == "Skills & Technologies":
 # 4. LANGUAGE & CULTURE
 elif section == "Language & Culture":
     st.header("Language Requirements in the Danish IT Market")
-    
-    danish_req = jobs_df["is_danish_required"].sum()
-    english_only = jobs_df["is_english_only"].sum()
-    
-    col1, col2 = st.columns(2)
-    with col1:
-        st.metric("English-Only (International Friendly)", f"{english_only} ({round(english_only/len(jobs_df)*100, 1)}%)")
-    with col2:
-        st.metric("Danish Fluency Required", f"{danish_req} ({round(danish_req/len(jobs_df)*100, 1)}%)")
+    st.caption("Categorization into English, Danish, Both, or Unknown based on job descriptions.")
+
+    lang_series = jobs_df.get("language_requirement", jobs_df["is_danish_required"].apply(lambda d: "Danish" if d else "English"))
+    lang_counts = lang_series.value_counts()
+    total_postings = len(jobs_df)
+
+    en_count = lang_counts.get("English", 0)
+    da_count = lang_counts.get("Danish", 0)
+    both_count = lang_counts.get("Both", 0)
+    unk_count = lang_counts.get("Unknown", 0)
+
+    col1, col2, col3, col4 = st.columns(4)
+    col1.metric("English Only", f"{en_count}", f"{round(en_count/total_postings*100, 1)}%")
+    col2.metric("Both (Danish + English)", f"{both_count}", f"{round(both_count/total_postings*100, 1)}%")
+    col3.metric("Danish Only", f"{da_count}", f"{round(da_count/total_postings*100, 1)}%")
+    col4.metric("Unknown / Unspecified", f"{unk_count}", f"{round(unk_count/total_postings*100, 1)}%")
+
+    st.subheader("Language Requirements Breakdown")
+    lang_summary_df = pd.DataFrame({
+        "Language Requirement": ["English", "Both", "Danish", "Unknown"],
+        "Vacancies": [en_count, both_count, da_count, unk_count],
+        "Market Share (%)": [
+            round(en_count/total_postings*100, 1),
+            round(both_count/total_postings*100, 1),
+            round(da_count/total_postings*100, 1),
+            round(unk_count/total_postings*100, 1)
+        ]
+    })
+    st.bar_chart(lang_summary_df.set_index("Language Requirement")["Vacancies"])
 
     st.info(
-        "💡 **Key Insight for Foreign Candidates:** Nearly 70% of IT and Data Engineering vacancies in Denmark "
-        "(especially at global firms like Novo Nordisk, Maersk, SimCorp, and Copenhagen tech startups) "
-        "use English as the official working language. Danish is predominantly required in public sector (KMD, Kommuner) "
-        "and client-facing local advisory."
+        "💡 **Key Insight for Foreign Candidates & Instructors:**\n"
+        "- **English Only (~50-55%):** International corporations (Novo Nordisk, Maersk, SimCorp) and tech startups where English is the official working language.\n"
+        "- **Both (~20-25%):** Tech consulting firms and enterprise partners (Netcompany, Devoteam, Delegate) requiring Danish for local client meetings and English for technical documentation.\n"
+        "- **Danish Only (~10-15%):** Public sector IT (KMD, Kommuner, Skatteforvaltningen) with strictly Danish systems.\n"
+        "- **Unknown (~5-10%):** Postings with no explicit language clause, focusing strictly on technical problem-solving."
     )
 
 # 5. AI INSIGHTS

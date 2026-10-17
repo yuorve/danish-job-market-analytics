@@ -32,6 +32,7 @@ def handle_get_stats() -> Dict[str, Any]:
         "categories": analyzer.get_jobs_by_category(),
         "companies": analyzer.get_top_companies(8),
         "cooccurrence": analyzer.get_skill_cooccurrence(12),
+        "languages": analyzer.get_language_distribution(),
     }
 
 def handle_get_jobs(params: Dict[str, Any]) -> Any:

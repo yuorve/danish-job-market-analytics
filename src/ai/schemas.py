@@ -9,6 +9,7 @@ from typing import Any, Dict, List, Optional
 class LanguageAssessment:
     danish_required: bool
     english_accepted: bool
+    requirement: str = "Unknown"  # "English", "Danish", "Both", or "Unknown"
 
 @dataclass
 class JobAnalysisOutput:
@@ -26,7 +27,8 @@ class JobAnalysisOutput:
             "skills": self.skills,
             "language": {
                 "danish_required": self.language.danish_required,
-                "english_accepted": self.language.english_accepted
+                "english_accepted": self.language.english_accepted,
+                "requirement": self.language.requirement
             },
             "implicit_requirements": self.implicit_requirements,
             "summary": self.summary
@@ -44,9 +46,24 @@ def validate_ai_response_dict(data: Dict[str, Any]) -> JobAnalysisOutput:
     lang_raw = data.get("language", {})
     if not isinstance(lang_raw, dict):
         lang_raw = {}
+    danish_req = bool(lang_raw.get("danish_required", False))
+    english_acc = bool(lang_raw.get("english_accepted", True))
+    
+    req_str = str(lang_raw.get("requirement", "")).strip().capitalize()
+    if req_str not in ["English", "Danish", "Both", "Unknown"]:
+        if danish_req and english_acc:
+            req_str = "Both"
+        elif danish_req:
+            req_str = "Danish"
+        elif english_acc:
+            req_str = "English"
+        else:
+            req_str = "Unknown"
+
     lang = LanguageAssessment(
-        danish_required=bool(lang_raw.get("danish_required", False)),
-        english_accepted=bool(lang_raw.get("english_accepted", True))
+        danish_required=danish_req,
+        english_accepted=english_acc,
+        requirement=req_str
     )
 
     implicit = [str(x) for x in data.get("implicit_requirements", [])]

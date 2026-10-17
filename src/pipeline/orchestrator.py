@@ -113,6 +113,7 @@ class PipelineOrchestrator:
                 "currency": job_data.get("currency", "DKK"),
                 "url": job_data.get("url", ""),
                 "language_requirements": job_data.get("language_requirements", ""),
+                "language_requirement": job_data.get("language_requirement", "Unknown"),
                 "is_danish_required": job_data["is_danish_required"],
                 "is_english_only": job_data["is_english_only"],
                 "is_remote": job_data["is_remote"],

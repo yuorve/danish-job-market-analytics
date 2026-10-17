@@ -29,6 +29,18 @@ class MarketAnalyzer:
             c.execute("SELECT COUNT(DISTINCT skill_id) FROM job_skills")
             total_technologies = c.fetchone()[0]
 
+            c.execute("SELECT COUNT(*) FROM jobs WHERE language_requirement = 'English'")
+            english_jobs = c.fetchone()[0]
+
+            c.execute("SELECT COUNT(*) FROM jobs WHERE language_requirement = 'Danish'")
+            danish_jobs = c.fetchone()[0]
+
+            c.execute("SELECT COUNT(*) FROM jobs WHERE language_requirement = 'Both'")
+            both_jobs = c.fetchone()[0]
+
+            c.execute("SELECT COUNT(*) FROM jobs WHERE language_requirement = 'Unknown' OR language_requirement IS NULL")
+            unknown_jobs = c.fetchone()[0]
+
             c.execute("SELECT COUNT(*) FROM jobs WHERE is_english_only = 1")
             english_friendly = c.fetchone()[0]
 
@@ -51,7 +63,10 @@ class MarketAnalyzer:
             max_salary = round(sal_row[2] or 0)
 
         junior_opp_index = round((junior_jobs / total_jobs * 100), 1) if total_jobs else 0
-        english_ratio = round((english_friendly / total_jobs * 100), 1) if total_jobs else 0
+        english_ratio = round((english_jobs / total_jobs * 100), 1) if total_jobs else 0
+        danish_ratio = round((danish_jobs / total_jobs * 100), 1) if total_jobs else 0
+        both_ratio = round((both_jobs / total_jobs * 100), 1) if total_jobs else 0
+        unknown_ratio = round((unknown_jobs / total_jobs * 100), 1) if total_jobs else 0
         remote_ratio = round((remote_jobs / total_jobs * 100), 1) if total_jobs else 0
 
         return {
@@ -59,10 +74,22 @@ class MarketAnalyzer:
             "total_companies": total_companies,
             "total_cities": total_cities,
             "total_technologies": total_technologies,
+            "language_counts": {
+                "english": english_jobs,
+                "danish": danish_jobs,
+                "both": both_jobs,
+                "unknown": unknown_jobs
+            },
+            "language_percentages": {
+                "english": english_ratio,
+                "danish": danish_ratio,
+                "both": both_ratio,
+                "unknown": unknown_ratio
+            },
             "english_friendly_jobs": english_friendly,
             "danish_required_jobs": danish_required,
             "english_friendly_pct": english_ratio,
-            "danish_required_pct": round(100 - english_ratio, 1),
+            "danish_required_pct": round(danish_ratio + both_ratio, 1),
             "remote_jobs": remote_jobs,
             "hybrid_jobs": hybrid_jobs,
             "remote_pct": remote_ratio,
@@ -72,6 +99,20 @@ class MarketAnalyzer:
             "salary_min_dkk": min_salary,
             "salary_max_dkk": max_salary
         }
+
+    def get_language_distribution(self) -> List[Dict[str, Any]]:
+        """Return breakdown of English, Danish, Both, and Unknown requirements."""
+        sql = """
+            SELECT 
+                COALESCE(language_requirement, 'Unknown') AS requirement,
+                COUNT(*) AS count,
+                ROUND(COUNT(*) * 100.0 / (SELECT COUNT(*) FROM jobs), 1) AS percentage,
+                ROUND(AVG(salary_avg), 0) AS avg_salary
+            FROM jobs
+            GROUP BY COALESCE(language_requirement, 'Unknown')
+            ORDER BY count DESC;
+        """
+        return self.repo.execute_query(sql)
 
     def get_jobs_by_city(self) -> List[Dict[str, Any]]:
         sql = """

@@ -15,7 +15,7 @@ Key components:
 * Modular ETL pipeline with data quality (DQ) checks and MD5 hash deduplication.
 * Normalized relational database (3NF) with analytical SQL queries.
 * Technology taxonomy and skill extraction engine.
-* **Candidate Matcher** evaluating technical fit and Danish vs. English language requirements.
+* **Candidate Matcher** evaluating technical fit and Language requirement detection for English, Danish, both, or unknown.
 * Interactive analytics dashboard (Streamlit + Web App).
 
 ---
@@ -60,7 +60,7 @@ Built to showcase production-ready skills for **Data Specialist / Data Instructo
 * **RegEx & Taxonomy:** YAML / JSON (`config/skills.yaml`)
 * **AI Layer:** Google Gemini / OpenAI API with offline deterministic fallback
 * **Dashboard:** Streamlit + React / Express
-* **Testing:** Pytest / Unittest (18 tests, 100% passing)
+* **Testing:** Pytest / Unittest
 * **DevOps:** Docker, Docker Compose, Makefile
 
 ---
@@ -69,7 +69,7 @@ Built to showcase production-ready skills for **Data Specialist / Data Instructo
 
 Ensures 100% local, instant reproducibility without external API credentials:
 
-* **Demo Dataset:** 520+ realistic job postings modeled after Danish tech employers (Novo Nordisk, Maersk, Netcompany, SimCorp, etc.).
+* **Demo Dataset:** 520+ synthetic job postings modeled after typical Danish IT market data. Company names, job titles, salaries, locations and listings are synthetic and do not represent real vacancies.
 * **Geographic Coverage:** Copenhagen, Aarhus, Odense, Aalborg, Ballerup, Lyngby, Hillerød, Roskilde.
 * **Ethical Transparency:** All synthetic demo records are explicitly marked with `source = "synthetic_demo"`.
 

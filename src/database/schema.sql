@@ -50,6 +50,7 @@ CREATE TABLE IF NOT EXISTS jobs (
     currency TEXT DEFAULT 'DKK',
     url TEXT,
     language_requirements TEXT,
+    language_requirement TEXT DEFAULT 'Unknown',
     is_danish_required BOOLEAN DEFAULT 0,
     is_english_only BOOLEAN DEFAULT 0,
     is_remote BOOLEAN DEFAULT 0,
