@@ -111,5 +111,46 @@ class TestDataTransformations(unittest.TestCase):
         self.assertEqual(res["role_category"], "Data Engineering")
         self.assertTrue(res["is_data_role"])
 
+    def test_sql_alone_does_not_bias_software_dev_as_data_engineering(self):
+        """A backend/software engineer using SQL must remain Software Development."""
+        job = {
+            "title": "Senior Backend C# Developer",
+            "description": "Building ASP.NET microservices, REST APIs, and integrating PostgreSQL using SQL queries.",
+            "technologies": ["C#", ".NET", "SQL", "Docker"]
+        }
+        res = self.transformer.transform_record(job)
+        self.assertEqual(res["role_category"], "Software Development")
+        self.assertFalse(res["is_data_role"])
+
+    def test_role_category_bi_analytics(self):
+        job = {
+            "title": "Power BI & Analytics Specialist",
+            "description": "Developing executive dashboards, DAX measures, and reporting models with SQL data sources.",
+            "technologies": ["Power BI", "SQL"]
+        }
+        res = self.transformer.transform_record(job)
+        self.assertEqual(res["role_category"], "BI & Analytics")
+
+    def test_role_category_ai_machine_learning(self):
+        job = {
+            "title": "Machine Learning Engineer",
+            "description": "Training LLM fine-tuning pipelines and RAG vector search models in PyTorch.",
+            "technologies": ["Python", "PyTorch", "LLM", "RAG"]
+        }
+        res = self.transformer.transform_record(job)
+        self.assertEqual(res["role_category"], "AI & Machine Learning")
+        self.assertTrue(res["is_ai_role"])
+
+    def test_role_category_cloud_devops(self):
+        job = {
+            "title": "Platform & DevOps Engineer",
+            "description": "Managing Kubernetes clusters, CI/CD pipelines, and Terraform infrastructure as code.",
+            "technologies": ["Kubernetes", "Terraform", "Docker", "CI/CD"]
+        }
+        res = self.transformer.transform_record(job)
+        self.assertEqual(res["role_category"], "Cloud & DevOps")
+        self.assertTrue(res["is_devops_role"])
+
 if __name__ == "__main__":
     unittest.main()
+

@@ -30,15 +30,26 @@ def load_data():
 
     conn = sqlite3.connect(DB_PATH)
     
-    # Jobs with company and location
+    # Jobs with company, location, and explicit synthetic source identifier
     jobs_df = pd.read_sql_query("""
         SELECT 
-            j.*, 
-            c.name as company_name, 
+            j.job_id,
+            j.source_id AS dataset_source,
+            j.title,
+            c.name AS company_name,
             c.industry,
             l.city, 
             l.region,
-            GROUP_CONCAT(s.name, ', ') as skills_list
+            j.role_category,
+            j.experience_level,
+            j.language_requirement,
+            j.remote_type,
+            j.salary_min,
+            j.salary_max,
+            j.salary_avg,
+            j.published_date,
+            j.description,
+            GROUP_CONCAT(s.name, ', ') AS skills_list
         FROM jobs j
         JOIN companies c ON j.company_id = c.company_id
         JOIN locations l ON j.location_id = l.location_id
@@ -83,16 +94,30 @@ def load_data():
 st.title("🇩🇰 Danish Job Market Analytics")
 st.caption("End-to-end Data Engineering & Analytics Portfolio Project | Target: Data Specialist / Instructor in Denmark")
 
+# PERMANENT VISIBLE DATA TRANSPARENCY DISCLAIMER (P0)
+st.warning(
+    "⚠️ **Synthetic demonstration data — no real vacancies or employer endorsements.**\n\n"
+    "This portfolio dashboard demonstrates an end-to-end IT data pipeline and analytics engine. "
+    "All job postings, company mentions, salary benchmarks, and publication dates are synthetically generated "
+    "for technical demonstration and benchmarking purposes."
+)
+
 try:
     jobs_df, skills_df, cooccur_df = load_data()
 except Exception as e:
     st.error(f"Error loading database: {e}")
     st.stop()
 
-# Sidebar Navigation
+# Sidebar Navigation & Data Origin Badge
+st.sidebar.title("Navigation")
 section = st.sidebar.radio(
-    "Navigation",
+    "Select Section",
     ["Overview", "Market Analytics", "Skills & Technologies", "Language & Culture", "AI Insights", "Candidate Match"]
+)
+st.sidebar.divider()
+st.sidebar.info(
+    "📊 **Data Origin:** `synthetic_demo`\n\n"
+    "Total Records: 440+ verified synthetic postings modeled after Danish tech ecosystem distributions."
 )
 
 # 1. OVERVIEW
@@ -102,12 +127,12 @@ if section == "Overview":
     total_jobs = len(jobs_df)
     companies_count = jobs_df["company_name"].nunique()
     cities_count = jobs_df["city"].nunique()
-    english_friendly = jobs_df["is_english_only"].sum()
-    junior_jobs = jobs_df["is_junior"].sum()
+    english_friendly = (jobs_df["language_requirement"] == "English").sum()
+    junior_jobs = (jobs_df["experience_level"] == "Junior").sum()
     avg_salary = int(jobs_df["salary_avg"].dropna().mean()) if not jobs_df["salary_avg"].empty else 52000
 
     col1, col2, col3, col4, col5 = st.columns(5)
-    col1.metric("Total IT Postings", f"{total_jobs:,}")
+    col1.metric("Total IT Postings", f"{total_jobs:,}", "Synthetic Demo")
     col2.metric("Hiring Companies", f"{companies_count}")
     col3.metric("Danish Cities", f"{cities_count}")
     col4.metric("English-Friendly", f"{int(english_friendly / total_jobs * 100)}%", f"{english_friendly} jobs")
@@ -115,11 +140,13 @@ if section == "Overview":
 
     st.divider()
 
-    st.subheader("Recent IT Openings in Denmark")
-    st.dataframe(
-        jobs_df[["job_id", "title", "company_name", "city", "role_category", "experience_level", "salary_avg", "published_date"]].head(15),
-        use_container_width=True
-    )
+    st.subheader("Sample IT Vacancies in Denmark (Tagged as Synthetic)")
+    display_df = jobs_df[[
+        "job_id", "dataset_source", "title", "company_name", "city", 
+        "role_category", "experience_level", "language_requirement", "salary_avg", "published_date"
+    ]].head(20).copy()
+    display_df.rename(columns={"dataset_source": "Data Origin"}, inplace=True)
+    st.dataframe(display_df, use_container_width=True)
 
 # 2. MARKET ANALYTICS
 elif section == "Market Analytics":
@@ -162,20 +189,19 @@ elif section == "Language & Culture":
     st.header("Language Requirements in the Danish IT Market")
     st.caption("Categorization into English, Danish, Both, or Unknown based on job descriptions.")
 
-    lang_series = jobs_df.get("language_requirement", jobs_df["is_danish_required"].apply(lambda d: "Danish" if d else "English"))
-    lang_counts = lang_series.value_counts()
+    lang_counts = jobs_df["language_requirement"].value_counts()
     total_postings = len(jobs_df)
 
-    en_count = lang_counts.get("English", 0)
-    da_count = lang_counts.get("Danish", 0)
-    both_count = lang_counts.get("Both", 0)
-    unk_count = lang_counts.get("Unknown", 0)
+    en_count = int(lang_counts.get("English", 0))
+    da_count = int(lang_counts.get("Danish", 0))
+    both_count = int(lang_counts.get("Both", 0))
+    unk_count = int(lang_counts.get("Unknown", 0))
 
     col1, col2, col3, col4 = st.columns(4)
     col1.metric("English Only", f"{en_count}", f"{round(en_count/total_postings*100, 1)}%")
     col2.metric("Both (Danish + English)", f"{both_count}", f"{round(both_count/total_postings*100, 1)}%")
     col3.metric("Danish Only", f"{da_count}", f"{round(da_count/total_postings*100, 1)}%")
-    col4.metric("Unknown / Unspecified", f"{unk_count}", f"{round(unk_count/total_postings*100, 1)}%")
+    col4.metric("Unknown / Unstated", f"{unk_count}", f"{round(unk_count/total_postings*100, 1)}%")
 
     st.subheader("Language Requirements Breakdown")
     lang_summary_df = pd.DataFrame({
@@ -195,7 +221,7 @@ elif section == "Language & Culture":
         "- **English Only (~50-55%):** International corporations (Novo Nordisk, Maersk, SimCorp) and tech startups where English is the official working language.\n"
         "- **Both (~20-25%):** Tech consulting firms and enterprise partners (Netcompany, Devoteam, Delegate) requiring Danish for local client meetings and English for technical documentation.\n"
         "- **Danish Only (~10-15%):** Public sector IT (KMD, Kommuner, Skatteforvaltningen) with strictly Danish systems.\n"
-        "- **Unknown (~5-10%):** Postings with no explicit language clause, focusing strictly on technical problem-solving."
+        "- **Unknown (~5-10%):** Postings with no explicit language clause. In our candidate matcher, unstated requirements are treated as unverified warnings rather than assumed matches."
     )
 
 # 5. AI INSIGHTS
@@ -206,7 +232,7 @@ elif section == "AI Insights":
     selected_job_id = st.selectbox("Select a Job to Analyze", jobs_df["job_id"].tolist())
     job_row = jobs_df[jobs_df["job_id"] == selected_job_id].iloc[0]
     
-    st.write(f"**Title:** {job_row['title']} at **{job_row['company_name']}** ({job_row['city']})")
+    st.write(f"**Title:** {job_row['title']} at **{job_row['company_name']}** ({job_row['city']}) `[Origin: {job_row['dataset_source']}]`")
     
     if st.button("Run AI Semantic Analysis"):
         from src.ai.analyzer import AIJobAnalyzer
@@ -246,11 +272,11 @@ elif section == "Candidate Match":
         cand_level = st.selectbox("Experience Level", ["junior", "mid", "senior"], index=0)
 
     with col_job:
-        st.subheader("Target Job Posting")
+        st.subheader("Target Job Vacancy (Synthetic Demo)")
         target_job_id = st.selectbox("Choose Vacancy", jobs_df["job_id"].tolist())
         target_job = jobs_df[jobs_df["job_id"] == target_job_id].iloc[0].to_dict()
         st.write(f"**Target:** {target_job['title']} at {target_job['company_name']}")
-        st.write(f"**Location:** {target_job['city']} | **Type:** {target_job['remote_type']}")
+        st.write(f"**Location:** {target_job['city']} | **Type:** {target_job['remote_type']} | **Origin:** `{target_job.get('dataset_source', 'synthetic_demo')}`")
         st.write(f"**Required Skills:** {target_job.get('skills_list', 'Python, SQL')}")
 
     if st.button("Calculate Match Fit"):
@@ -276,6 +302,6 @@ elif section == "Candidate Match":
             if res.language_match:
                 st.info(f"🗣️ **Language:** {res.language_note}")
             else:
-                st.error(f"⚠️ **Language Alert:** {res.language_note}")
+                st.warning(f"⚠️ **Language Alert / Verification Required:** {res.language_note}")
 
         st.info(f"📌 **Portfolio Recommendation:** {res.recommendation}")

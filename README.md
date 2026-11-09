@@ -22,7 +22,7 @@ Key components:
 
 ## 2. What It Demonstrates
 
-Built to showcase production-ready skills for **Data Specialist / Data Instructor / Junior Data Engineer** roles:
+Built to demonstrate practical Data Engineering, Analytics and AI engineering skills through a reproducible, modular project using synthetic Danish IT job market data:
 
 * **Python & Data Engineering:** Modular, typed, and reproducible pipeline (Extract, Clean, Transform, Load).
 * **Data Quality & Hygiene:** Deterministic deduplication, HTML stripping, entity normalization, and validation reports.

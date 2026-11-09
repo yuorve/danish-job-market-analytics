@@ -123,10 +123,14 @@ class CandidateMatcher:
                 language_match = False
                 language_note = f"Position requires professional English proficiency. Candidate indicates {cand_english}."
         else:
-            # Unknown / Unstated
-            lang_score = 16.0
-            language_match = True
-            language_note = "Language requirement is unstated in the listing. English is typically standard in Danish IT."
+            # Unknown / Unstated language requirement
+            # Treat strictly as unverified (not compatible/satisfied). Do NOT award favorable match score.
+            lang_score = 0.0
+            language_match = False
+            language_note = (
+                "Warning: Language requirement is unstated in this posting. "
+                "It cannot be verified as compatible; confirm corporate and team language expectations directly with the hiring manager."
+            )
 
         # Seniority alignment (weighted 10%)
         cand_exp = candidate_profile.get("experience", {}).get("level", "junior").lower()

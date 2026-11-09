@@ -71,5 +71,27 @@ class TestCandidateMatching(unittest.TestCase):
         self.assertIn("Microsoft Fabric", res.missing_skills)
         self.assertIn("dbt", res.missing_skills)
 
+    def test_unknown_language_treated_as_unverified_warning(self):
+        candidate = {
+            "skills": ["Python", "SQL"],
+            "languages": {"english": "C1", "danish": "A1"},
+            "experience": {"level": "junior"}
+        }
+        job = {
+            "job_id": "TEST-UNKNOWN-LANG",
+            "title": "Software Developer",
+            "company": "Pleo",
+            "location": "Copenhagen",
+            "skills": ["Python", "SQL"],
+            "language_requirement": "Unknown",
+            "experience_level": "Junior"
+        }
+        res = self.matcher.evaluate_match(candidate, job)
+        self.assertFalse(res.language_match, "Unknown language must NOT be flagged as a satisfied match!")
+        self.assertIn("Warning", res.language_note)
+        self.assertIn("unstated", res.language_note.lower())
+        # With zero points for language, maximum score is bounded to tech (70) + seniority (10) = 80
+        self.assertLessEqual(res.match_score, 80)
+
 if __name__ == "__main__":
     unittest.main()

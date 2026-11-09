@@ -53,6 +53,7 @@ interface StatsData {
 
 interface Job {
   job_id: string;
+  source_id?: string;
   title: string;
   company_name: string;
   industry: string;
@@ -73,16 +74,20 @@ interface Job {
 
 const PRESET_QUERIES = [
   {
+    name: "Sample Vacancies with Data Origin",
+    sql: `SELECT j.job_id, j.source_id AS data_origin, j.title, c.name AS company, l.city, j.role_category, j.language_requirement, j.salary_avg FROM jobs j JOIN companies c ON j.company_id = c.company_id JOIN locations l ON j.location_id = l.location_id LIMIT 10;`
+  },
+  {
     name: "Top Technologies & Market Share",
     sql: `SELECT s.name AS skill_name, s.category, COUNT(js.job_id) AS job_count, ROUND(COUNT(js.job_id) * 100.0 / (SELECT COUNT(*) FROM jobs), 1) AS penetration_pct FROM skills s JOIN job_skills js ON s.skill_id = js.skill_id GROUP BY s.name, s.category ORDER BY job_count DESC LIMIT 10;`
   },
   {
     name: "City Breakdown & International Ratio",
-    sql: `SELECT l.city, l.region, COUNT(j.job_id) AS total_jobs, SUM(CASE WHEN j.is_english_only = 1 THEN 1 ELSE 0 END) AS english_friendly, ROUND(AVG(j.salary_avg), 0) AS avg_salary_dkk FROM locations l JOIN jobs j ON l.location_id = j.location_id GROUP BY l.city, l.region ORDER BY total_jobs DESC;`
+    sql: `SELECT l.city, l.region, COUNT(j.job_id) AS total_jobs, SUM(CASE WHEN j.language_requirement = 'English' THEN 1 ELSE 0 END) AS english_friendly, ROUND(AVG(j.salary_avg), 0) AS avg_salary_dkk FROM locations l JOIN jobs j ON l.location_id = j.location_id GROUP BY l.city, l.region ORDER BY total_jobs DESC;`
   },
   {
     name: "Junior-Friendly Entry Positions",
-    sql: `SELECT j.job_id, j.title, c.name AS company, l.city, j.role_category, j.salary_min, j.salary_max FROM jobs j JOIN companies c ON j.company_id = c.company_id JOIN locations l ON j.location_id = l.location_id WHERE j.is_junior = 1 LIMIT 12;`
+    sql: `SELECT j.job_id, j.source_id AS data_origin, j.title, c.name AS company, l.city, j.role_category, j.salary_min, j.salary_max FROM jobs j JOIN companies c ON j.company_id = c.company_id JOIN locations l ON j.location_id = l.location_id WHERE j.is_junior = 1 LIMIT 12;`
   },
   {
     name: "Technology Co-Occurrence Matrix",
@@ -372,6 +377,26 @@ export default function App() {
         </div>
       </header>
 
+      {/* PERMANENT DATA TRANSPARENCY DISCLAIMER (P0) */}
+      <div className="bg-amber-950/70 border-b border-amber-800/80 text-amber-200 px-4 py-2.5 text-xs">
+        <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <AlertCircle className="w-4 h-4 text-amber-400 shrink-0" />
+            <span>
+              <strong>Notice:</strong> Synthetic demonstration data — no real vacancies or employer endorsements.
+            </span>
+            <span className="text-amber-300/70 hidden lg:inline">
+              (Company names, salaries, and postings are simulated to demonstrate pipeline architecture and analytics).
+            </span>
+          </div>
+          <div className="flex items-center gap-2 font-mono text-[11px]">
+            <span className="bg-amber-900/80 text-amber-300 px-2 py-0.5 rounded border border-amber-600/60 font-semibold">
+              DATASET: synthetic_demo
+            </span>
+          </div>
+        </div>
+      </div>
+
       {/* Main Container */}
       <main className="max-w-7xl mx-auto px-4 py-6 flex-1 w-full">
         {loading ? (
@@ -489,9 +514,17 @@ export default function App() {
 
                 {/* Top Hiring Companies Table */}
                 <div className="bg-slate-900 border border-slate-800 rounded p-5">
-                  <h2 className="text-sm font-semibold text-slate-200 mb-3 flex items-center gap-2">
-                    <Building2 className="w-4 h-4 text-emerald-400" /> Top Employers in the Danish IT Market
-                  </h2>
+                  <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
+                    <h2 className="text-sm font-semibold text-slate-200 flex items-center gap-2">
+                      <Building2 className="w-4 h-4 text-emerald-400" /> Representative IT Employers in Denmark
+                    </h2>
+                    <span className="text-[10px] font-mono bg-amber-950/70 text-amber-300 border border-amber-800/60 px-2 py-0.5 rounded">
+                      Synthetic Benchmark Dataset
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-400 mb-3">
+                    Modeled after public tech market distributions. Not an endorsement or real job postings from listed employers.
+                  </p>
                   <div className="overflow-x-auto">
                     <table className="w-full text-xs text-left">
                       <thead className="bg-slate-950/70 text-slate-400 uppercase tracking-wider border-b border-slate-800">
@@ -881,7 +914,12 @@ export default function App() {
                         if (!curJob) return null;
                         return (
                           <div className="p-3 bg-slate-900 rounded border border-slate-800/80 space-y-1.5 text-xs">
-                            <div className="font-semibold text-slate-100">{curJob.title}</div>
+                            <div className="flex items-center justify-between">
+                              <span className="font-semibold text-slate-100">{curJob.title}</span>
+                              <span className="text-[10px] font-mono bg-amber-950/80 text-amber-300 border border-amber-800/60 px-1.5 py-0.5 rounded">
+                                [Synthetic Demo]
+                              </span>
+                            </div>
                             <div className="text-slate-400">
                               {curJob.company_name} &middot; {curJob.city} &middot; {curJob.remote_type}
                             </div>
@@ -966,6 +1004,8 @@ export default function App() {
                         className={`p-3 rounded text-xs border ${
                           matchResult.language_match
                             ? 'bg-slate-950 border-slate-800 text-slate-300'
+                            : matchResult.language_note.includes('Warning') || matchResult.language_note.includes('unstated')
+                            ? 'bg-amber-950/50 border-amber-700/70 text-amber-200'
                             : 'bg-red-950/40 border-red-800/60 text-red-200'
                         }`}
                       >

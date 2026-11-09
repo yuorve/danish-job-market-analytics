@@ -1,5 +1,7 @@
 """
 Unit tests for data cleaning, normalizations, and quality validation.
+Includes tests for two-stage deduplication (URL check + content similarity)
+ensuring genuinely distinct job vacancies at the same employer are preserved.
 """
 
 import unittest
@@ -39,23 +41,88 @@ class TestDataCleaning(unittest.TestCase):
         self.assertEqual(normalize_company_name("Netcompany ApS"), "Netcompany")
         self.assertEqual(normalize_company_name("Maersk Group"), "Maersk")
 
-    def test_deduplication(self):
+    def test_deduplication_exact_republication(self):
+        """Republications with identical or near-identical text must be dropped."""
+        desc = (
+            "We are looking for a Data Engineer to build Azure Databricks lakehouse pipelines "
+            "with dbt and PySpark. High standards for automated CI/CD and clean data modeling."
+        )
         records = [
             RawJobRecord(
                 job_id="REC-1",
-                source="synthetic_demo",
-                title="Python Data Engineer",
+                source="jobindex_dk",
+                title="Data Engineer",
                 company="Trifork A/S",
-                description="Developing data pipelines.",
-                location="Copenhagen"
+                description=desc,
+                location="Copenhagen",
+                url="https://jobindex.dk/job/101"
             ),
             RawJobRecord(
                 job_id="REC-2",
-                source="synthetic_demo",
-                title="Python Data Engineer",
+                source="the_hub",
+                title="Data Engineer",
                 company="Trifork",
-                description="Duplicate posting on another board.",
-                location="København"
+                description=f"<p>{desc}</p>",  # Same description wrapped in HTML tags
+                location="København",
+                url="https://thehub.io/jobs/202"
+            ),
+        ]
+        cleaned, report = self.cleaner.clean_records(records)
+        self.assertEqual(len(cleaned), 1)
+        self.assertEqual(report.duplicates_removed, 1)
+
+    def test_deduplication_preserves_distinct_vacancies_same_company(self):
+        """Two distinct vacancies with the same title at the same company must NOT be dropped."""
+        records = [
+            RawJobRecord(
+                job_id="VAC-101",
+                source="jobindex_dk",
+                title="Software Engineer",
+                company="Novo Nordisk",
+                location="Bagsværd",
+                description=(
+                    "Join our Clinical Trial Analytics platform team. Designing reactive microservices "
+                    "in TypeScript, GraphQL, and Node.js for global regulatory submission workflows."
+                ),
+                url="https://novonordisk.com/jobs/clinical-101"
+            ),
+            RawJobRecord(
+                job_id="VAC-102",
+                source="jobindex_dk",
+                title="Software Engineer",
+                company="Novo Nordisk A/S",
+                location="Bagsværd",
+                description=(
+                    "Join our Supply Chain Automation team. Implementing IoT sensor telemetry ingestion, "
+                    "Python backend services, and industrial equipment control integrations."
+                ),
+                url="https://novonordisk.com/jobs/supply-chain-102"
+            ),
+        ]
+        cleaned, report = self.cleaner.clean_records(records)
+        self.assertEqual(len(cleaned), 2, "Distinct vacancies at same employer must be preserved!")
+        self.assertEqual(report.duplicates_removed, 0)
+
+    def test_deduplication_exact_url_collision(self):
+        """Records with the same application URL are immediate duplicates."""
+        records = [
+            RawJobRecord(
+                job_id="URL-1",
+                source="jobindex_dk",
+                title="C# Backend Developer",
+                company="SimCorp",
+                location="Copenhagen",
+                description="Developing investment management software.",
+                url="https://simcorp.com/careers/csharp-01/"
+            ),
+            RawJobRecord(
+                job_id="URL-2",
+                source="linkedin_jobs",
+                title="Senior C# Developer",
+                company="SimCorp",
+                location="Copenhagen",
+                description="Repost of the same position on LinkedIn.",
+                url="https://simcorp.com/careers/csharp-01"  # Trailing slash difference
             ),
         ]
         cleaned, report = self.cleaner.clean_records(records)

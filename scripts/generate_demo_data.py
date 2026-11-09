@@ -166,8 +166,9 @@ def generate_dataset(num_records=525):
         extra_skills_pool = ["Docker", "Git", "Linux", "CI/CD", "FastAPI", "PostgreSQL", "Power BI", "dbt", "REST API", "Pandas"]
         combined_skills = list(set(primary_skills + random.sample(extra_skills_pool, k=random.randint(1, 3))))
         
-        # Full realistic job description
+        # Full realistic job description with explicit synthetic disclaimer
         description = f"""
+[SYNTHETIC DEMONSTRATION DATA — No real vacancy or employer endorsement from {comp['name']}]
 About the role at {comp['name']}:
 We are looking for a {title} to join our technology team in {loc['city']}, Denmark ({loc['region']}).
 {desc_base}
@@ -193,6 +194,8 @@ Language & Culture:
         job = {
             "job_id": job_id,
             "source": "synthetic_demo",
+            "is_synthetic": True,
+            "data_notice": "Synthetic demonstration data — no real vacancies or employer endorsements.",
             "title": title,
             "company": comp["name"],
             "description": description,
@@ -214,20 +217,32 @@ Language & Culture:
         }
         jobs.append(job)
 
-    # Add a couple of realistic raw edges to test data cleaning:
-    # 1 duplicate job from another mock source
-    dup = dict(jobs[0])
-    dup["job_id"] = f"DK-JOB-DUP-001"
-    dup["source"] = "synthetic_demo"
-    dup["title"] = jobs[0]["title"].upper()  # Uppercase title
-    dup["company"] = jobs[0]["company"] + " A/S"  # Company with Danish legal suffix
-    jobs.append(dup)
+    # Add realistic raw edges to test data cleaning and two-stage deduplication:
+    # 1. Exact duplicate with uppercase title and legal suffix
+    dup1 = dict(jobs[0])
+    dup1["job_id"] = "DK-JOB-DUP-001"
+    dup1["source"] = "synthetic_demo"
+    dup1["title"] = jobs[0]["title"].upper()
+    dup1["company"] = jobs[0]["company"] + " A/S"
+    jobs.append(dup1)
 
-    # 1 job with HTML tags in description
-    html_job = dict(jobs[10])
-    html_job["job_id"] = f"DK-JOB-HTML-002"
-    html_job["description"] = f"<p><strong>Stilling:</strong> {jobs[10]['title']}</p><p>{jobs[10]['description']}</p><br/>"
-    jobs.append(html_job)
+    # 2. HTML wrapper duplicate
+    dup2 = dict(jobs[10])
+    dup2["job_id"] = "DK-JOB-HTML-002"
+    dup2["description"] = f"<div class='job-posting'><h1>{jobs[10]['title']}</h1><p>{jobs[10]['description']}</p></div>"
+    jobs.append(dup2)
+
+    # 3. Canonical URL collision duplicate
+    dup3 = dict(jobs[20])
+    dup3["job_id"] = "DK-JOB-URL-003"
+    dup3["url"] = jobs[20]["url"] + "/"  # Trailing slash variation
+    jobs.append(dup3)
+
+    # 4. Cross-board republication with minor punctuation variation
+    dup4 = dict(jobs[30])
+    dup4["job_id"] = "DK-JOB-BOARD-004"
+    dup4["company"] = jobs[30]["company"] + " ApS"
+    jobs.append(dup4)
 
     return jobs
 

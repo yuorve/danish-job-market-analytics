@@ -11,11 +11,11 @@ Computes domain indicators:
 - is_ai_role
 - is_devops_role
 - is_cloud_role
-- role_category
+- role_category (Multi-signal weighted classifier: title > context > specific skills)
 """
 
 import re
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 from src.skill_extraction.extractor import SkillExtractor
 
 # Danish language requirement cues
@@ -75,19 +75,73 @@ JUNIOR_PATTERNS = re.compile(
     re.IGNORECASE
 )
 
-DATA_PATTERNS = re.compile(
-    r"\b(data\s+engineer|data\s+specialist|lakehouse|etl|dbt|spark|databricks|fabric|"
-    r"analytics\s+engineer|data\s+platform|sql\s+developer|data\s+warehouse|bi\s+developer)\b",
+# =========================================================================
+# Multi-Signal Role Categorization Patterns
+# High precision: Title (10 pts) > Description Context (4 pts) > Specific Tools
+# =========================================================================
+
+# 1. Title Patterns
+TITLE_DATA_ENG = re.compile(
+    r"\b(data\s+engineer(?:ing)?|etl\s+(?:developer|engineer)|data\s+platform\s+engineer|"
+    r"lakehouse\s+engineer|analytics\s+engineer|big\s+data\s+engineer|database\s+engineer|"
+    r"data\s+infrastructure|data\s+specialist|data\s+warehouse\s+developer)\b",
     re.IGNORECASE
 )
 
-AI_PATTERNS = re.compile(
-    r"\b(machine\s+learning|ai\s+engineer|llm|generative\s+ai|deep\s+learning|computer\s+vision|nlp|mlops)\b",
+TITLE_AI_ML = re.compile(
+    r"\b(machine\s+learning|ml\s+engineer|ai\s+engineer|data\s+scientist|deep\s+learning|"
+    r"nlp\s+engineer|computer\s+vision|ai\s+researcher|generative\s+ai\s+engineer|prompt\s+engineer)\b",
     re.IGNORECASE
 )
 
-DEVOPS_PATTERNS = re.compile(
-    r"\b(devops|platform\s+engineer|sre|site\s+reliability|kubernetes|infrastructure|cloud\s+engineer)\b",
+TITLE_CLOUD_DEVOPS = re.compile(
+    r"\b(devops|platform\s+engineer|sre|site\s+reliability|cloud\s+architect|cloud\s+engineer|"
+    r"infrastructure\s+engineer|kubernetes\s+engineer|cloud\s+specialist|sysadmin|systems\s+engineer)\b",
+    re.IGNORECASE
+)
+
+TITLE_BI_ANALYTICS = re.compile(
+    r"\b(bi\s+developer|business\s+intelligence|power\s+bi\s+developer|tableau\s+developer|"
+    r"bi\s+consultant|data\s+analyst|reporting\s+specialist|analytics\s+consultant|insights\s+analyst)\b",
+    re.IGNORECASE
+)
+
+TITLE_SOFTWARE_DEV = re.compile(
+    r"\b(software\s+engineer|software\s+developer|full\s*stack|backend|frontend|web\s+developer|"
+    r"python\s+developer|c#\s+developer|\.net\s+developer|java\s+developer|application\s+developer|"
+    r"system\s+developer|systemudvikler|softwareudvikler|c\+\+\s+developer|go\s+developer|"
+    r"rust\s+developer|mobile\s+developer|ios\s+developer|android\s+developer)\b",
+    re.IGNORECASE
+)
+
+# 2. Description Context Patterns
+CONTEXT_DATA_ENG = re.compile(
+    r"\b(data\s+pipelines?|lakehouse|etl\s+pipeline|data\s+warehouse|data\s+mesh|delta\s+lake|"
+    r"batch\s+processing|stream\s+processing|dbt\s+models|spark\s+jobs|data\s+ingestion)\b",
+    re.IGNORECASE
+)
+
+CONTEXT_AI_ML = re.compile(
+    r"\b(train(?:ing)?\s+models|neural\s+networks?|large\s+language\s+models?|prompt\s+engineering|"
+    r"retrieval\s+augmented|generative\s+ai|model\s+evaluation|fine-tuning|hugging\s*face|embeddings)\b",
+    re.IGNORECASE
+)
+
+CONTEXT_CLOUD_DEVOPS = re.compile(
+    r"\b(ci/cd|infrastructure\s+as\s+code|container\s+orchestration|helm\s+charts?|"
+    r"cloud\s+infrastructure|terraform\s+modules|monitoring\s+and\s+alerting|gitops)\b",
+    re.IGNORECASE
+)
+
+CONTEXT_BI_ANALYTICS = re.compile(
+    r"\b(dashboards?|business\s+reporting|data\s+visualization|kpis?|executive\s+reports?|"
+    r"dax\s+queries|tabular\s+models?|power\s+bi\s+reports?|stakeholder\s+reporting)\b",
+    re.IGNORECASE
+)
+
+CONTEXT_SOFTWARE_DEV = re.compile(
+    r"\b(microservices|rest\s+apis?|frontend\s+architecture|backend\s+services|clean\s+code|"
+    r"software\s+architecture|user\s+interfaces?|web\s+applications?|unit\s+testing|object-oriented)\b",
     re.IGNORECASE
 )
 
@@ -96,18 +150,7 @@ def detect_language_requirement(text: str, explicit_requirement: Optional[str] =
     """
     Detect language requirement for Danish IT market job postings.
     Returns strictly one of: 'English', 'Danish', 'Both', or 'Unknown'.
-
-    Evaluation Pipeline:
-    1. Check explicit requirement parameter if provided and recognizable.
-    2. Check for explicit English-exclusive / Danish-not-required clauses.
-    3. Check for bilingual requirement patterns ('Both').
-    4. Check for Danish requirement vs English requirement cues:
-       - If both Danish and English cues are present -> 'Both'.
-       - If only Danish is required (and not negated) -> 'Danish'.
-       - If only English is required / international -> 'English'.
-       - If no linguistic clauses are stated -> 'Unknown'.
     """
-    # 1. Explicit requirement string check
     if explicit_requirement:
         norm_exp = explicit_requirement.strip().lower()
         if re.search(r"^(unspecified|not\s+stated|unknown|none|ikke\s+angivet)(\s*[/,].*)?$", norm_exp):
@@ -127,7 +170,6 @@ def detect_language_requirement(text: str, explicit_requirement: Optional[str] =
             if has_exp_english:
                 return "English"
 
-    # 2. Text inspection on combined text (title, description, and any requirements text)
     combined_text = f"{text} {explicit_requirement or ''}".lower()
 
     has_danish_negation = bool(DANISH_NEGATION_PATTERNS.search(combined_text))
@@ -145,6 +187,129 @@ def detect_language_requirement(text: str, explicit_requirement: Optional[str] =
     if has_english_cue:
         return "English"
     return "Unknown"
+
+
+def classify_role_domain(title: str, description: str, skill_names: List[str]) -> Tuple[str, Dict[str, bool]]:
+    """
+    Weighted multi-signal role classifier.
+    Avoids bias where ubiquitous technologies (like SQL) erroneously misclassify software
+    developers, backend engineers, or BI analysts as Data Engineers.
+
+    Weighting:
+    - Title Signals: 10 points (dominant indicator)
+    - Description Context Signals: 4 points
+    - Specialized Technologies: 2-3 points
+    - Shared Technologies (e.g. SQL, Git): 1 point evenly distributed across relevant fields
+    """
+    title_clean = title.strip()
+    desc_clean = description.strip()
+
+    scores = {
+        "Data Engineering": 0.0,
+        "AI & Machine Learning": 0.0,
+        "Cloud & DevOps": 0.0,
+        "BI & Analytics": 0.0,
+        "Software Development": 0.0
+    }
+
+    # 1. Title Signals (10 points)
+    if TITLE_DATA_ENG.search(title_clean):
+        scores["Data Engineering"] += 10.0
+    if TITLE_AI_ML.search(title_clean):
+        scores["AI & Machine Learning"] += 10.0
+    if TITLE_CLOUD_DEVOPS.search(title_clean):
+        scores["Cloud & DevOps"] += 10.0
+    if TITLE_BI_ANALYTICS.search(title_clean):
+        scores["BI & Analytics"] += 10.0
+    if TITLE_SOFTWARE_DEV.search(title_clean):
+        scores["Software Development"] += 10.0
+
+    # 2. Description Context Signals (4 points)
+    if CONTEXT_DATA_ENG.search(desc_clean):
+        scores["Data Engineering"] += 4.0
+    if CONTEXT_AI_ML.search(desc_clean):
+        scores["AI & Machine Learning"] += 4.0
+    if CONTEXT_CLOUD_DEVOPS.search(desc_clean):
+        scores["Cloud & DevOps"] += 4.0
+    if CONTEXT_BI_ANALYTICS.search(desc_clean):
+        scores["BI & Analytics"] += 4.0
+    if CONTEXT_SOFTWARE_DEV.search(desc_clean):
+        scores["Software Development"] += 4.0
+
+    # 3. Technology Signals
+    skills_set = set(skill_names)
+
+    # Specialized Data Engineering tech
+    for sk in ["Databricks", "Microsoft Fabric", "dbt", "Apache Spark", "Airflow", "Snowflake"]:
+        if sk in skills_set:
+            scores["Data Engineering"] += 3.0
+
+    # Specialized AI tech
+    for sk in ["Machine Learning", "Deep Learning", "LLM", "Generative AI", "PyTorch", "RAG", "Computer Vision", "NLP"]:
+        if sk in skills_set:
+            scores["AI & Machine Learning"] += 3.0
+
+    # Specialized Cloud & DevOps tech
+    for sk in ["Kubernetes", "Terraform", "CI/CD"]:
+        if sk in skills_set:
+            scores["Cloud & DevOps"] += 3.0
+
+    # Specialized BI tech
+    for sk in ["Power BI", "Tableau", "DAX"]:
+        if sk in skills_set:
+            scores["BI & Analytics"] += 3.0
+
+    # Specialized Software Development tech
+    for sk in ["React", "TypeScript", "Node.js", ".NET", "C#", "Java", "Go", "Rust", "FastAPI", "Django", "Spring"]:
+        if sk in skills_set:
+            scores["Software Development"] += 2.0
+
+    # Generic & Shared Technologies:
+    # SQL is ubiquitous: provides balanced foundation, NEVER biases Data Engineering alone!
+    if "SQL" in skills_set:
+        scores["Data Engineering"] += 1.0
+        scores["BI & Analytics"] += 1.0
+        scores["Software Development"] += 1.0
+
+    if "Pandas" in skills_set:
+        scores["Data Engineering"] += 1.0
+        scores["AI & Machine Learning"] += 1.0
+
+    # Cloud platforms: shared across Cloud and modern cloud-native data lakehouses
+    for cloud in ["Azure", "AWS", "GCP"]:
+        if cloud in skills_set:
+            scores["Cloud & DevOps"] += 1.0
+            scores["Data Engineering"] += 1.0
+
+    if "Docker" in skills_set:
+        scores["Cloud & DevOps"] += 1.5
+        scores["Software Development"] += 1.0
+
+    # 4. Resolve Category Winner
+    max_score = max(scores.values())
+    if max_score > 0:
+        # Pick category with highest score
+        role_category = max(scores, key=scores.get)
+    else:
+        role_category = "Software Development"
+
+    # Compute boolean role flags
+    is_data = (scores["Data Engineering"] >= 4.0) or bool(TITLE_DATA_ENG.search(title_clean))
+    is_ai = (scores["AI & Machine Learning"] >= 4.0) or bool(TITLE_AI_ML.search(title_clean))
+    is_devops = (scores["Cloud & DevOps"] >= 4.0) or bool(TITLE_CLOUD_DEVOPS.search(title_clean))
+    is_cloud = (
+        is_devops or
+        any(s in skills_set for s in ["Azure", "AWS", "GCP", "Kubernetes", "Terraform", "Docker"])
+    )
+
+    flags = {
+        "is_data_role": is_data,
+        "is_ai_role": is_ai,
+        "is_devops_role": is_devops,
+        "is_cloud_role": is_cloud
+    }
+
+    return role_category, flags
 
 
 class DataTransformer:
@@ -183,23 +348,12 @@ class DataTransformer:
         else:
             exp_level = "Mid"
 
-        # 4. Role Domains
-        is_data = bool(DATA_PATTERNS.search(f"{title} {desc}")) or any(s in skill_names for s in ["SQL", "Databricks", "Microsoft Fabric", "dbt", "Apache Spark", "Pandas"])
-        is_ai = bool(AI_PATTERNS.search(f"{title} {desc}")) or any(s in skill_names for s in ["Machine Learning", "LLM", "Generative AI", "PyTorch", "RAG"])
-        is_devops = bool(DEVOPS_PATTERNS.search(f"{title} {desc}")) or any(s in skill_names for s in ["Kubernetes", "Terraform", "CI/CD"])
-        is_cloud = "Azure" in skill_names or "AWS" in skill_names or "GCP" in skill_names or "Docker" in skill_names
-
-        # Assign primary role category
-        if is_data:
-            role_category = "Data Engineering"
-        elif is_ai:
-            role_category = "AI & Machine Learning"
-        elif is_devops:
-            role_category = "Cloud & DevOps"
-        elif "Power BI" in skill_names or "Tableau" in skill_names:
-            role_category = "BI & Analytics"
-        else:
-            role_category = "Software Development"
+        # 4. Multi-Signal Role Categorization
+        role_category, flags = classify_role_domain(
+            title=title,
+            description=desc,
+            skill_names=skill_names
+        )
 
         # 5. Remote / Hybrid Policy
         remote_str = str(raw_job.get("remote", "")).lower()
@@ -222,10 +376,10 @@ class DataTransformer:
             "is_remote": is_remote,
             "is_hybrid": is_hybrid,
             "is_junior": is_junior,
-            "is_data_role": is_data,
-            "is_ai_role": is_ai,
-            "is_devops_role": is_devops,
-            "is_cloud_role": is_cloud,
+            "is_data_role": flags["is_data_role"],
+            "is_ai_role": flags["is_ai_role"],
+            "is_devops_role": flags["is_devops_role"],
+            "is_cloud_role": flags["is_cloud_role"],
             "experience_level": exp_level,
             "salary_avg": sal_avg
         }
