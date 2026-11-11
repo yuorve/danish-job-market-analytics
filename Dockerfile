@@ -16,7 +16,7 @@ RUN pip3 install --no-cache-dir -r requirements.txt --break-system-packages
 
 # Instalar dependencias de Node.js
 COPY package.json package-lock.json* bun.lock* ./
-RUN npm install
+RUN npm install --legacy-peer-deps
 
 # Copiar el código del proyecto
 COPY . .
