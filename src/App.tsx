@@ -1341,8 +1341,23 @@ export default function App() {
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-slate-800/80 bg-slate-950 py-4 px-4 text-center text-xs text-slate-500 font-mono">
-        Danish Job Market Analytics &middot; Portfolio Project for Data Specialist / Instructor &middot; Denmark IT Market
+      <footer className="border-t border-slate-800/80 bg-slate-950 py-5 px-4 text-xs text-slate-400 font-mono">
+        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3 text-center sm:text-left">
+          <div>
+            Danish Job Market Analytics &middot; Portfolio Project for Data Specialist / Instructor
+          </div>
+          <div className="flex items-center gap-1.5 font-sans">
+            <span className="text-slate-500">Portfolio &amp; Author:</span>
+            <a
+              href="https://yoropeza.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-cyan-400 hover:text-cyan-300 underline underline-offset-4 transition font-medium"
+            >
+              yoropeza.com
+            </a>
+          </div>
+        </div>
       </footer>
     </div>
   );

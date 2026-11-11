@@ -119,6 +119,7 @@ st.sidebar.info(
     "📊 **Data Origin:** `synthetic_demo`\n\n"
     "Total Records: 440+ verified synthetic postings modeled after Danish tech ecosystem distributions."
 )
+st.sidebar.markdown("🔗 **Author Portfolio:** [yoropeza.com](https://yoropeza.com)")
 
 # 1. OVERVIEW
 if section == "Overview":
@@ -305,3 +306,12 @@ elif section == "Candidate Match":
                 st.warning(f"⚠️ **Language Alert / Verification Required:** {res.language_note}")
 
         st.info(f"📌 **Portfolio Recommendation:** {res.recommendation}")
+
+st.markdown("---")
+st.markdown(
+    "<p style='text-align: center; color: #94a3b8; font-size: 0.85rem;'>"
+    "Danish Job Market Analytics &middot; Portfolio Project &middot; "
+    "<a href='https://yoropeza.com' target='_blank' style='color: #38bdf8;'>yoropeza.com</a>"
+    "</p>",
+    unsafe_allow_html=True
+)
