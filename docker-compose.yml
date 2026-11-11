@@ -1,5 +1,3 @@
-version: "3.8"
-
 services:
   danish-job-market-analytics:
     build:
@@ -7,7 +5,7 @@ services:
       dockerfile: Dockerfile
     container_name: danish_job_market_analytics
     ports:
-      - "8501:8501"
+      - "3000:3000"
     environment:
       - AI_MODE=mock
       - DB_PATH=/app/data/processed/danish_jobs.db

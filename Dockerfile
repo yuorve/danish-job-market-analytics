@@ -1,36 +1,38 @@
-# Multi-stage Dockerfile for Danish Job Market Analytics
-FROM python:3.10-slim AS base
+# Multi-stage build con Python y Node.js para la app React + API Express
+FROM node:20-slim AS base
 
-# Install system dependencies
+# Instalar Python 3 y SQLite para el pipeline de datos
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    build-essential \
-    curl \
+    python3 \
+    python3-pip \
     sqlite3 \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
-# Copy dependency specifications
+# Instalar dependencias de Python
 COPY requirements.txt pyproject.toml ./
+RUN pip3 install --no-cache-dir -r requirements.txt --break-system-packages
 
-# Install python dependencies
-RUN pip install --no-cache-dir -r requirements.txt
+# Instalar dependencias de Node.js
+COPY package.json package-lock.json* bun.lock* ./
+RUN npm install
 
-# Copy source code and configurations
-COPY config/ ./config/
-COPY src/ ./src/
-COPY dashboard/ ./dashboard/
-COPY scripts/ ./scripts/
-COPY tests/ ./tests/
-COPY data/ ./data/
+# Copiar el código del proyecto
+COPY . .
 
-# Run ETL pipeline on image build to ensure immediate readiness
+# Ejecutar el pipeline ETL inicial para poblar la base de datos SQLite
 RUN python3 -m src.pipeline
 
-# Expose Streamlit port
-EXPOSE 8501
+# Compilar los estáticos de React (Vite)
+RUN npm run build
 
-HEALTHCHECK CMD curl --fail http://localhost:8501/_stcore/health || exit 1
+# Variables de entorno de producción
+ENV NODE_ENV=production
+ENV PORT=3000
 
-# Start Streamlit application
-CMD ["streamlit", "run", "dashboard/app.py", "--server.port=8501", "--server.address=0.0.0.0"]
+# Exponer el puerto de la aplicación web
+EXPOSE 3000
+
+# Iniciar el servidor Full-Stack Node/Express
+CMD ["npm", "start"]
