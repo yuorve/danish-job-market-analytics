@@ -14,3 +14,23 @@ services:
     volumes:
       - ./data:/app/data
     restart: unless-stopped
+
+  # ── Cloudflare Tunnel ────────────────────────────────────────────────────────
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    container_name: cf-tunnel
+    restart: unless-stopped
+    command: tunnel --no-autoupdate run
+    deploy:
+      resources:
+        limits:
+          memory: 64M
+    environment:
+      - TUNNEL_TOKEN=eyJhIjoiNzBmMmYzYTAwY2I3M2ZkYzVlZGZkN2EyODc5NzMwMmIiLCJ0IjoiNDk3NjNmOTAtMzhhMi00ZjU2LThmY2MtMDBhNzdmY2JiYzE3IiwicyI6Ik1qWXhPREZsWlRrdFlXTTBPUzAwT0RVekxUZ3lNVFV0WVdFeE5EZGlOekV4T0dFdyJ9
+    depends_on:
+      - api
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
