@@ -26,7 +26,7 @@ services:
         limits:
           memory: 64M
     environment:
-      - TUNNEL_TOKEN=eyJhIjoiNzBmMmYzYTAwY2I3M2ZkYzVlZGZkN2EyODc5NzMwMmIiLCJ0IjoiNDk3NjNmOTAtMzhhMi00ZjU2LThmY2MtMDBhNzdmY2JiYzE3IiwicyI6Ik1qWXhPREZsWlRrdFlXTTBPUzAwT0RVekxUZ3lNVFV0WVdFeE5EZGlOekV4T0dFdyJ9
+      - TUNNEL_TOKEN=eyJhIjoiNzBmMmYzYTAwY2I3M2ZkYzVlZGZkN2EyODc5NzMwMmIiLCJ0IjoiYzQ0ZWYxNDgtNDJmNC00MDA5LWJhZDUtNzQyMGRkOWI4NzI1IiwicyI6Ik9ESXdNVGRtWWpNdFpqWmpOeTAwWkdVMExXRXhZamN0TWpreE56Z3dNemhoTlRneiJ9
     depends_on:
       - api
     logging:
